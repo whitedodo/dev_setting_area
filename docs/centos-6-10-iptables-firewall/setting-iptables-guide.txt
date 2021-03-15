@@ -1,0 +1,100 @@
+[보안 관련 설정]
+
+1. 적용사항 - 내용 확인하기
+# vim /etc/sysconfig/iptables
+
+# 셋팅은 가급적 iptables 명령으로 실행하는 것을 권장함.
+
+2. iptables 로그 설정(셋팅하기)
+2-1. iptables 로그 셋팅
+iptables -A INPUT -j LOG
+iptables -A INPUT -j DROP
+iptables -A INPUT -s 192.168.0.0/24 -j LOG --log-level 4
+iptables -A INPUT -j LOG --log-level info  --log-prefix "IPTABLES:INPUT:DROP"
+iptables -A OUTPUT -j LOG --log-prefix "IPTABLES:OUTPUT:DROP"
+
+# service iptables save
+
+2-2. rsyslog 환경설정하기 (확인할 것)
+vim /etc/rsyslog.conf
+   *.info;mail.none;authpriv.none;cron.none       /var/log/messages
+
+2-3. /etc/rsyslog.d/iptables.conf (파일 만들어주기) - 특정 위치에 로그 출력하기
+:msg, startswith, "IPTABLES:INPUT:DROP" -/var/log/iptables_input.log
+& ~
+:msg, startswith, "IPTABLES:OUTPUT:DROP" -/var/log/iptables_output.log
+& ~
+
+2-4. rsyslog 재시작
+service rsyslog restart
+
+2-5. iptables 재시작
+service iptables restart
+
+2-6. 로그 확인
+tail /var/log/messages
+-> 설정한 로그가 없다.
+
+tail /var/log/iptables_test.log
+-> 설정한 로그가 있다.
+
+
+3. 정책 사용방법
+
+## 포트, IP 관련
+(1) 특정 포트 허용 방법
+# iptables -A INPUT -p tcp --dport 포트번호 -j ACCEPT
+(포트번호에 원하는 서비스 포트번호로 입력하고 UDP의 경우에 tcp를 udp로 변경하시길 바랍니다.)
+
+(2) 특정 IP 허용 방법
+# iptables -A INPUT -s IP주소 -j ACCEPT
+   (IP주소에 원하는 IP로 변경하시길 바랍니다.)
+
+(3) 특정 IP 차단 방법
+# iptables -A INPUT -s IP주소 -j DROP
+   (IP주소에 원하는 IP로 변경하시길 바랍니다.)
+
+(4) ip차단 설정
+iptables -A INPUT -s 211.224.103.138 -j DROP
+
+(5) ip대역 차단
+iptables -A INPUT -t filter -s 211.224.103.0/24 -j DROP
+
+## 취약점 보안
+(6) NULL 패킷 차단
+iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+
+(7) syn-flood-attack 차단
+iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+
+(8) XMAX 패킷 차단
+iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+
+(9) 웹 접속 차단
+iptables -A INPUT -s 211.224.103.138 -p tcp --dport 80 -j DROP
+
+4. 등록한 정책 번호별 조회
+iptables -L --line-numbers
+
+5. 특정 정책 번호 삭제
+iptables -D INPUT 1
+iptables -D OUTPUT 1
+
+6. IPTables 저장
+# service iptables save
+
+7. IPTables 중지 / 시작
+# service iptables stop
+# service iptables start
+
+8. 설정내역 보기
+# iptables -L
+
+9. Iptables 초기화(주의: 백업해놓고 할 것) - 모든 정책 삭제
+# iptables -F
+
+10. 부팅시 iptables 데몬 자동 시작 설정
+# chkconfig iptables on
+
+11. iptables 설정 정보 확인
+# iptables -nL

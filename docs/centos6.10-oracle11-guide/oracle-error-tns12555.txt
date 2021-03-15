@@ -1,0 +1,24 @@
+[TNS-12555] 오류 대응 방안 / 2020-10-16
+Dodo / rabbit.white at daum dot net
+(GNU/GPL v3 Licenses)
+
+[선행작업: linux_guide
+
+TNS-12555: TNS:permission denied
+ TNS-12560: TNS:protocol adapter error
+  TNS-00525: Insufficient privilege for operation
+   Linux Error: 1: Operation not permitted
+ 
+
+1. 권한 바꿔주기
+chmod 777 /var/tmp/.oracle
+chown oracle:oinstall /var/tmp/.oracle
+
+2. tmp 폴더에 있는 .oracle 권한 
+[root@redhat tmp]# chown oracle:oinstall .oracle
+drwxrwxrwt.  2 oracle oinstall 4096 Mar 20 17:15 .oracle
+
+3. 리스너 시작해주기
+lsnrctl start
+
+

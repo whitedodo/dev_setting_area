@@ -1,0 +1,88 @@
+/*
+	Project Name: CentOS7, Tomcat7 with OpenSSL
+	Filename: 201205_tomcat7_openssl_generate.txt
+	Author: Dodo(rabbit.white at daum dot net)
+	Create Date: 2020-12-06
+	Licenses: GNU/GPL v3 Licenses.
+	Description:
+	
+
+*/
+
+1. compiler
+yum group install ‘Development Tools’
+yum install perl-core zlib-devel -y
+
+2. openssl download
+cd /usr/local/src
+wget https://www.openssl.org/source/openssl-1.1.1a.tar.gz
+tar -xvzf openssl-1.1.1a.tar.gz
+
+3. config
+cd openssl-1.1.1a
+./config
+make
+make install
+
+4. openssl 버전확인
+openssl version
+
+5. cp (라이브러리)
+에러명: openssl: error while loading shared libraries: libssl.so.1.1: cannot open shared object file: No such file or directory
+cp /usr/local/lib64/libssl.so.1.1 /usr/lib64/libssl.so.1.1
+
+// 방법1) OpenSSL 생성
+openssl genrsa -des3 -out private.key 2048
+openssl rsa -in private.key -pubout -out public.key
+openssl req -new -key private.key -out private.csr
+openssl req -x509 -days 1825 -key private.key -in private.csr -out mycrt.crt -days 1825
+pkcs12 -export -in mycrt.crt -inkey private.key -out .keystore -name tomcat
+
+// 방법2) 개발 SSL(사설 인증서)
+keytool -genkey -alias project -keyalg RSA -keysize 2048 -validity 3650 -keystore server.jks
+keytool -certreq -alias project -file private.csr -keystore server.jks
+
+6. tomcat 환경설정 변경하기
+
+// Tomcat 6.x 이하 버전의 설정
+<Connector port="443"
+           protocol="HTTP/1.1" 
+           SSLEnabled="true"
+           maxThreds="150" 
+           scheme="https" 
+           secure="true" 
+           clientAuth="false"
+           keystoreFile="/usr/local/tomcat/conf/domain.jks"
+         keystorePass="password" 
+           sslProtocol="TLS" 
+/>
+
+// Tomcat 7.x 이하 버전의 설정
+<Connector port="443" 
+           protocol="HTTP/1.1" 
+           SSLEnabled="true"
+           maxThreds="150" 
+           scheme="https" 
+           secure="true" 
+           clientAuth="false"
+           keystoreFile="/usr/local/tomcat/conf/domain.jks" 
+         keystorePass="password"
+           sslEnabledProtocols="TLSv1.1,TLSv1.2"
+           ciphers="TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+                    ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+                    ,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+                    ,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+                    ,TLS_RSA_WITH_AES_128_CBC_SHA256
+                    ,TLS_RSA_WITH_AES_128_CBC_SHA
+                    ,TLS_RSA_WITH_AES_256_CBC_SHA256
+                    ,TLS_RSA_WITH_AES_256_CBC_SHA" 
+/>
+
+// SSL 인증서 쌍 체인 등록 방법
+<Connector port="443" protocol="HTTP/1.1" SSLEnabled="true"
+           maxThreds="150" scheme="https" secure="true" clientAuth="false"
+           SSLCertificateFile="/usr/local/tomcat/config/ssl/domain.crt"
+           SSLCertificateKeyFile="/usr/local/tomcat/config/ssl/domain.key"
+           SSLCACertificateFile="/usr/local/tomcat/config/ssl/chainca.crt"
+           sslProtocol="TLS" 
+/>

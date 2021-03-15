@@ -1,0 +1,76 @@
+#####
+2020-10-29 // Oracle 11g Linux - Centos Remove Guide(Uninstall)
+### Dodo (rabbit.white at daum dot net) / GNU/GPL v3 Licenses
+
+
+# 리눅스 상의 오라클 11gR2 삭제 방법
+
+1.  오라클 계정으로 접속
+[root@server01 install]# su - oracle
+
+2. $ORACLE_HOME 위치로 이동.
+[oracle@server01 ~]$ cd $ORACLE_HOME
+
+3. deinstall 폴더로 이동.
+
+[oracle@server01 db_1]$ cd deinstall/
+[oracle@server01 deinstall]$ ls -rlt
+
+total 68
+
+-rwxr-xr-x 1 oracle oinstall 31544 Mar 31  2009 sshUserSetup.sh
+-rw-r--r-- 1 oracle oinstall  3154 Jul 13  2009 deinstall.xml
+drwxr-xr-x 2 oracle oinstall  4096 May 12 16:30 jlib
+drwxr-xr-x 2 oracle oinstall  4096 May 12 16:30 response
+-rwxr-xr-x 1 oracle oinstall 20676 May 12 16:31 deinstall
+
+ 
+4. ./deinstall 파일 실행 시켜 오라클 삭제.
+[oracle@server01 deinstall]$ ./deinstall
+Checking for required files and bootstrapping ...
+
+Please wait ...
+
+Location of logs /tmp/deinstall2017-06-05_03-40-08-PM/logs/
+
+
+
+############ ORACLE DEINSTALL & DECONFIG TOOL START ############
+
+.....
+
+####################### CLEAN OPERATION SUMMARY #######################
+Updated Enterprise Manager configuration for database ORCL
+Successfully de-configured the following database instances : ORCL
+Following Single Instance listener(s) were de-configured successfully: LISTENER
+Cleaning the config for CCR
+As CCR is not configured, so skipping the cleaning of CCR configuration
+CCR clean is finished
+Successfully detached Oracle home '/app/oracle/product/11.2.0/db_1' from the central inventory on the local node.
+Successfully deleted directory '/app/oracle/product/11.2.0/db_1' on the local node.
+Successfully deleted directory '/app/oraInventory' on the local node.
+Oracle Universal Installer cleanup was successful.
+
+
+Run 'rm -rf /etc/oraInst.loc' as root on node(s) 'server01' at the end of the session.
+
+Oracle install successfully cleaned up the temporary directories.
+#######################################################################
+
+############# ORACLE DEINSTALL & DECONFIG TOOL END #############
+5.  root 계정으로 /etc 폴더의 oraInst.loc / oratab 파일 삭제
+[root@server01 ~]# rm -rf /etc/oraInst.loc
+[root@server01 ~]# rm -f /etc/oratab
+
+6. root 계정으로 /usr/local/bin 폴더의 dbhome, oraenv, coraenv 파일 모두 삭제.
+[root@server01 bin]# rm -rf dbhome
+[root@server01 bin]# rm -rf coraenv
+[root@server01 bin]# rm -rf oraenv
+
+7. /tmp 폴더에 Ora로 시작하는 모든 디렉토리 삭제.
+[root@server01 ~]# rm -rf /tmp/OraInstall2017-06-05_03-42-17-PM*
+
+8. $ORACLE_HOME에 있는 폴더 모두 삭제.
+[root@server01 ~]# rm -Rf $ORACLE_HOME
+
+9. 환경 프로파일에 넣어준 부분 삭제. ( /etc/profile 또는 /home/oracle/.bash_profile )

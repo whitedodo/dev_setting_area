@@ -1,0 +1,92 @@
+﻿/*
+	Project Name: Ubuntu 20.04 - Apache Tomcat 9 with OpenSSL
+	Filename: 210221_ubuntu_20_04_apache_tomcat9_ssl_install_guide.txt
+	Author: Dodo(rabbit.white at daum dot net)
+	Create Date: 2021-02-21
+	Licenses: GNU/GPL v3 Licenses.
+	Description:
+	* 선행과정: 1단계 네트워크 설정, 2단계 한글 설정
+	Goal(목표):
+	* 3단계: 톰캣 설치 - HTTP/SSL 개발자 환경을 구축한다.
+
+*/
+1. 톰캣9 패키지 버전 설치하기(규격화 되어있음)
+# apt install tomcat9
+
+2. openssl download
+cd /usr/local/src
+wget https://www.openssl.org/source/openssl-1.1.1a.tar.gz
+tar xvzf openssl-1.1.1a.tar.gz
+
+3. config
+cd openssl-1.1.1a
+./config
+make && make install
+
+4. openssl 버전확인
+openssl version
+
+5. 폴더 이동
+# cd /
+
+6. 폴더 생성
+# mkdir ca
+
+7. 저장소 만들기
+/# cd ca
+ca# mkdir localhost
+ca# cd localhost
+
+// 방법1) 개발 SSL(사설 인증서)
+keytool -genkey -alias localhost -keyalg RSA -keystore /ca/localhost/keystore
+keytool -certreq -keyalg RSA -alias localhost -file svr1.csr -keystore /ca/localhost/keystore
+
+8. 톰켓 환경설정 경로
+# cd /etc/tomcat
+# vim server.xml
+------------------------------------------------------------------
+// Tomcat 7.x 이상 버전의 설정
+<Connector port="8443" protocol="HTTP/1.1"
+                connectionTimeout="20000"
+                redirectPort="8443"
+                SSLEnabled="true"
+                scheme="https"
+                secure="true"
+                sslProtocol="TLS"
+                keystoreFile="/ca/localhost/keystore"
+                keystorePass="password" />
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+[참고할 것]
+// SSL 인증서 쌍 체인 등록 방법
+<Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+           maxThreds="150" scheme="https" secure="true" clientAuth="false"
+           SSLCertificateFile="/usr/local/tomcat/config/ssl/domain.crt"
+           SSLCertificateKeyFile="/usr/local/tomcat/config/ssl/domain.key"
+           SSLCACertificateFile="/usr/local/tomcat/config/ssl/chainca.crt"
+           sslProtocol="TLS" 
+/>
+------------------------------------------------------------------
+
+9. 방화벽 
+# iptables -I INPUT -p tcp --dport 8443 -j ACCEPT
+# iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
+
+10. 재부팅(컴퓨터 다시 시작)
+# reboot
+
+11. 서비스 시작하기
+# service tomcat9 start
+
+12. 배포 위치 경로(톰캣9 설치 경로)
+* 설치 경로: /var/lib/tomcat9
+
+--------------------------------------------------------------
+root@master:/var/lib# cd tomcat9/
+root@master:/var/lib/tomcat9# ls
+conf  lib  logs  policy  webapps  work
+root@master:/var/lib/tomcat9# pwd
+/var/lib/tomcat9
+root@master:/var/lib/tomcat9#
+--------------------------------------------------------------

@@ -1,0 +1,10 @@
+### Subject: [오라클 11XE - 8080포트 변경하기] - Windows 기반
+### Author: Dodo / rabbit.white at daum dot net
+### Create Date: 2020-10-26
+### Licenses: (GNU/GPL v3 Licenses)
+
+C:\Windows\system32>sqlplus /nolog
+SQL> conn /as sysdba
+SQL> call dbms_xdb.cfg_update(updateXML(dbms_xdb.cfg_get(), '/xdbconfig/sysconfig/protocolconfig/httpconfig/http-port/text()', 8083));
+SQL> commit;
+SQL> EXEC dbms_xdb.cfg_refresh;

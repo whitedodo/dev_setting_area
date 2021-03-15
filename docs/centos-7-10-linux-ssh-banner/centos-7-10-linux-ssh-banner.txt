@@ -1,0 +1,19 @@
+/*
+	Project Name: CentOS 6, 7 - openSSH banner
+	Create Date: 2020-12-06
+	Author: Dodo / rabbit.white at daum dot net
+	Filename: centos-7-10-linux-ssh-banner.txt
+	Licenses: GNU/GPL v3 Licenses
+	Description:
+
+*/
+
+[OpenSSH - banner]
+1. vim /etc/ssh/sshd_config
+
+약 129줄
+   - # 주석제거
+Banner /etc/issue.net
+Banner /etc/issue
+
+2. 

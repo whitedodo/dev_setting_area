@@ -1,0 +1,9 @@
+[grep 리눅스 문자열 검색 - 복합 검색]
+2020-10-17 / Dodo (rabbit.white at daum dot net)
+- GNU/GPL v3 Licenses
+
+1. 복수개의 파일에서 문자열 검색
+grep 192.168.0.10 /var/log/iptables_input.log /var/log/iptables_output.log
+
+2. 응용) tail -f에 연동하기
+tail -f grep 192.168.0.10 /var/log/iptables_input.log /var/log/iptables_output.log

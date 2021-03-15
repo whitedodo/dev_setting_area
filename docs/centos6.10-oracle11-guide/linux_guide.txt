@@ -1,0 +1,272 @@
+2020-10-14: Dodo - (rabbit.white at daum dot net)
+GNU/GPL v3 Licenses]
+
+[1번] su관리자 계정으로 네트워크 올리기
+
+cd /etc/sysconfig/network-scripts
+vim ifcfg-eth0   [고정 IP , DHCP 설정, DNS, GW, NETMASK]
+ifup eth0   (네트워크 랜 올리기)
+
+[2번]
+[oracle-11g-centos.sh]
+yum install binutils-2* compat-libstdc++-33* 
+elfutils-libelf* gcc-4.* gcc-c++-4.* glibc-2.* glibc-common-2.* glibc-devel-2.*
+ glibc-headers-2.* ksh* libaio-0.* libaio-devel-0.* libgomp-4.* libgcc-4.* 
+libstdc++-4.* libstdc++-devel-4.* make-3.* sysstat-7.* unixODBC-2.* 
+unixODBC-devel-2.* pdksh*
+yum install elfutils-libelf-devel elfutils-libelf-devel-* 
+yum install unixODBC unixODBC-*
+yum install compat-libstdc++ compat-libstdc++
+yum -y install glibc-*
+yum -y install compat-lib*
+
+[2-1번] 추가 설치할 것(이거까지 설치 안하면 설치 진행이 안 된다.)
+yum -y install comapt-libstdc* libstdc++ libstdc++-devel libbaio-devel glib-devel glibc-headers glib-common kernel-header
+yum -y install compat-libcap1 gcc gcc-c++ ksh compat-libstdc++-33 libaio-devel 
+
+[3번]
+[vi /etc/sysctl.conf]  추가 수정
+kernel.shmmax = 536870912  # 이부분은 위에있다면 생략
+kernel.shmall = 2097152    # 이부분은 위에있다면 생략
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default=262144
+net.core.rmem_max=4194304
+net.core.wmem_default=262144
+net.core.wmem_max=1048586
+
+[4번]
+vi /etc/security/limits.conf (마지막에 쉘 권한)
+oracle  soft  nproc   2047
+oracle  hard  nproc   16384
+oracle  soft  nofile  1024
+oracle  hard  nofile  65536
+
+[5번]
+vi /etc/pam.d/login  (아래 내용 추가)
+session    required     pam_limits.so
+
+[6번]
+vi /etc/selinux/config
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+
+### 수정(disabled로)
+SELINUX=disabled
+# SELINUXTYPE= can take one of these two values:
+#     targeted - Targeted processes are protected,
+#     mls - Multi Level Security protection.
+SELINUXTYPE=targeted
+
+[7번]
+groupadd oinstall
+groupadd dba
+groupadd oper
+useradd -g oinstall -G dba oracle
+passwd oracle
+
+[8번] - X Window 설치
+[X Windows 및 관련 패키지 그룹 설치]
+yum groupinstall "X Window System" "Desktop" "Fonts" "Korean Support"
+---> /etc/inittab 의 default run level을 수정한다. (minimal로 설치하면 3번 Full Multi User mode이며 5번이 X11 mode 이다)
+sed -i 's/id:3:initdefault:/id:5:initdefault:/' /etc/inittab
+---> telinit 5 명령어로 run level 변경을 init process 에게 알려준다. (또는 reboot)
+
+(재부팅 후)
+startx 
+
+[9번] - Firefox 설치하기
+yum install firefox
+
+[10번]
+oracle.com 접속
+-> linux.x64_11gR2_database_2of2.zip
+-> linux.x64_11gR2_database_1of2.zip
+내려받기 / root@orcldev Download 폴더에 저장
+
+[11번] 호스트명
+vim /etc/hosts
+192.168.0.3  orcldev
+
+[12번] (su - oracle) 접속
+.bash_profile  수정하기(/home/oracle/.bash_profile
+
+ORACLE_HOSTNAME=localhost.localdomain; export ORACLE_HOSTNAME
+ORACLE_BASE=/app/oracle; export ORACLE_BASE
+ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1; export ORACLE_HOME
+ORACLE_SID=orcl; export ORACLE_SID
+ORACLE_TERM=xterm; export ORACLE_TERM
+PATH=/usr/sbin:$PATH; export PATH
+PATH=$ORACLE_HOME/bin:$PATH; export PATH
+LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
+CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib; export CLASSPATH
+
+[13번] DB 폴더 생성하기
+mkdir -p /app/oracle/product/11.2.0/db_1
+chown -R oracle:oinstall /app
+chmod -R 775 /app
+
+[14번] 설치파일 이동시키기
+[root@orcldev Downloads]# 폴더에 다운로드 받아둔 리눅스 오라클
+mv linux.x64_11gR2_database_* /app/oracle/
+chown -R oracle.oinstall /app/oracle/linux.x64_11gR2_database_*
+
+[15번] unzip 설치하기
+yum install unzip
+
+[16번] 경로 이동
+cd /app/oracle
+
+[17번] 압축 풀기
+unzip linux.x64_11gR2_database_1of2* && unzip linux.x64_11gR2_database_2of2*
+
+
+[18번]
+cd /app/oracle/database
+ls
+cd response
+ls
+dbca.rsp  db_install.rsp     netca.rsp
+
+[19번] /app/oracle/database/response
+vim db_install.rsp
+
+Line 29  oracle.install.option=INSTALL_DB_SWONLY
+Line 42  UNIX_GROUP_NAME=oinstall
+Line 49  INVENTORY_LOCATION=/app/oraInventory
+Line 86  SELECTED_LANGUAGES=en,ko
+Line 91  ORACLE_HOME=/app/oracle/product/11.2.0/db_1
+Line 96  ORACLE_BASE=/app/oracle
+Line 107  oracle.install.db.InstallEdition=EE
+Line 154  oracle.install.db.DBA_GROUP=dba
+Line 160  oracle.install.db.OPER_GROUP=dba
+Line 165  oracle.install.db.config.starterdb.globalDBName=orcl
+Line 170  oracle.install.db.config.starterdb.SID=orcl
+Line 400  DECLINE_SECURITY_UPDATES=true
+
+[20번] su
+vim /etc/oraInst.loc
+inventory_loc=/app/oraInventory
+inst_group=oinstall
+
+[21번] 오라클 설치 한글 깨짐 방지 
+cd /home/oracle
+export LANG=c
+
+[22번] /app/oracle/database   [silent 설치]
+(권장함. GUI 방식은 오류 생기면 답 안나옴. xWindow 신경 안 써도 됨.)
+-> Linux에서는 silent로 설치해야 오류발생 확률이 적고 안정적인 설치가 가능함.
+[oracle@] su - oracle
+-> ignorePrereq 넣어주면, INS-13013 오류 안 볼 수 있음.
+    [[FATAL] [INS-13013] Target environment do not meet some mandatory requirements.]
+[oracle@] ./runInstaller -silent -ignorePrereq -responseFile /app/oracle/database/response/db_install.rsp -waitForCompletion
+
+[23번] 관리자 계정 su
+su
+/app/oracle/product/11.2.0/db_1/root.sh
+
+[24번] 리스너 생성
+/app/oracle/database/response
+vim netca.rsp
+
+31 RESPONSE_VERSION="11.2"
+32 CREATE_TYPE="CUSTOM"
+46 #SHOW_GUI=false
+60 #LOG_FILE=""/app/oracle/products/11.2.0/db_1/network/tools/log/netca.log""
+71 INSTALL_TYPE=""custom"0"
+
+[25번] netca (runInstaller -silent)로 실행
+netca -silent -responseFile /app/oracle/database/response/netca.rsp
+
+[26번] dbca.rsp 수정 (/app/oracle/database/response/dbca.rsp
+vim dbca.rsp
+
+78 GDBNAME = "orcl"
+149 SID = "orcl"
+415 CHARACTERSET = "K016MSWIN949"
+
+[27번] dbca -silent -responseFile dbca.rsp
+Enter Sys user password;
+Enter SYSTEM user password;
+
+(참고: SSD에 프로세서 좋은 거 아니면, 시간이 오래 걸림.)
+(DB 생성 작업)
+
+[28번] sqlplus "/as sysdba" 입력하면 실행됨.
+
+---------------------
+[29번] DB서버 리스너 확인
+cd $ORACLE_HOME
+cd bin
+lsnrctl status LISTENER1527(리스너명)
+
+[30번] DB서버 리스너 등록하기(listener.ora)
+
+SID_LIST_LISTENER = 
+   (SID_LIST = 
+     (SID_DESC = 
+       (SID_NAME = orcl) 
+       (ORACLE_HOME = /app/oracle/product/11.2.0/db_1) 
+     ) 
+   ) 
+
+LISTENER = 
+   (DESCRIPTION_LIST = 
+     (DESCRIPTION = 
+       (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.0.10)(PORT = 1521)) 
+       (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1521)) 
+     ) 
+   )
+
+ADR_BASE_LISTENER = /app/oracle
+
+[31번] DB서버 리스너 등록하기(tnsnames.ora)
+su - oracle
+cd /app/oracle/product/11.2.0/db_1/network/admin/
+vim tnsnames.ora
+
+LISTENER_ORCL = 
+   (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.0.10)(PORT = 1521)) 
+
+ORACLR_CONNECTION_DATA = 
+    (DESCRIPTION = 
+        (ADDRESS_LIST = 
+            (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1521)) 
+        )
+        (CONNECT_DATA = 
+           (SID = CLRExtProc) 
+           (PRESENTATION = RO) 
+        ) 
+    ) 
+
+ORCL = 
+    (DESCRIPTION = 
+        (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.0.10)(PORT = 1521)) 
+        (CONNECT_DATA = 
+            (SERVER = DEDICATED) 
+            (SERVICE_NAME = orcl) 
+        ) 
+    )
+
+[32번] 리스너 시작 / 종료
+lsnrctl stop
+lsnrctl start
+
+[33번] 방화벽 포트 개방
+- iptables -I INPUT 1 -p tcp --dport 1521 -j ACCEPT
+
+[34번] (Oracle 11g는 c## 입력 안해도 생성됨.) -> Oracle 19g부터는 c##입력 필수
+- create user hr identified by 123456;
+
+[35번] 권한 생성
+- grant connect, dba, resource to hr;
+
+[36번] 계정 삭제와 계정 패스워드 변경
+- 'alter user 유저명 identified by 패스워드'  명령어로 계정의 패스워드를 변경한다.
+- 'drop user 유저명 cascade' 명령어로 계정을 삭제한다.

@@ -1,0 +1,37 @@
+####################################################
+###
+###       CentOS 7 - Minimal Setup Guide
+###                  Filename: centos-7-install-guide.txt
+###                  Create Date: 2020-11-15
+###                  License: GNU/GPL v3 Licenses
+###                  Author: Dodo (rabbit.white at daum dot net)
+### 
+####################################################
+
+
+◎ 1. CentOS Mirrors List -
+    - CentOS 7을 지원하는 대표 사이트이다.
+1. http://isoredirect.centos.org/centos/7/isos/x86_64/
+2. http://mirror.navercorp.com/centos/7/isos/x86_64/
+
+◎ 2. ISO 파일
+1. CentOS-7-x86_64-Minimal-2003.iso
+
+◎ 3. rufus 등으로 굽기
+
+[설치 작업]
+◎ 4. 언어 설정하기
+       (English -> Korean 등)
+
+◎ 5. Network 랜카드 활성화해주기
+
+◎ 6. Mirror 사이트 URL 입력하기
+http://mirror.navercorp.com/centos/7/os/x86_64
+
+◎ 7. 파티션 설정하기
+
+◎ 8. 소프트웨어 소스 설정하기
+
+◎ 9. 관리자 계정, 사용자 계정 설정하기
+
+◎ 10. 기다리면 설치가 완료된다.

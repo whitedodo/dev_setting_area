@@ -1,0 +1,133 @@
+[Centos 6.10 - Subversion 서버 구축 및 설정 가이드]
+- 2020-10-17 / Dodo (rabbit.white at daum dot net)
+  GNU/GPL v3 Licenses
+
+1. 설치하기(subversion)
+yum install -y subversion
+
+2. SVN 계정 추가
+adduser svn1
+passwd svn1
+
+3. 저장소(Repository) 만들기
+svnadmin 으로 해당 저장소를 만들어 준다.
+
+root@localhost~# svnadmin create --fs-type fsfs /home/svn1/repos/
+# mkdir /home/svn1/repos
+# chown -R svn1:svn1 /home/svn1/repos/
+
+4. repo 환경설정하기
+[root@orcldev conf]# pwd
+/home/svn1/repos/conf
+[root@orcldev conf]# ls
+authz  passwd  svnserve.conf
+[root@orcldev conf]# vim svnserve.conf
+-------------------------------------------------------------------------
+anon-access = none         // 비인증 사용자의 접속을 거부
+auth-access = write        // 인증 사용자는 R/W가 가능
+password-db = passwd       // 사용자 인증을 할 파일명
+authz-db = authz            // 인증된 사용자가 접속가능한 폴더의 정보를 갖고있는 파일명
+realm = 설명입력
+-------------------------------------------------------------------------
+
+5. repo - 사용자 인증 설정하기 (passwd)
+vim passwd
+
+[users]
+# harry = harryssecret
+# sally = sallyssecret
+svn1 = 123456
+
+## 최상위 디렉토리 접속권한
+[/]
+svn1 = rw ## svn1은 읽고 쓰기가 가능
+#svn2 = r ## 읽기만 가능
+#
+
+#[/tag]
+#svn1 = rw ## svn1의 경우, /tag 및 하위폴더에 읽고 쓰기가 가능
+
+6. authz 설정: 권한
+mv authz authz.old
+vim authz
+
+[/]
+svn1 = rw
+
+7. 방화벽 설정
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 3306 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 3690 -j ACCEPT
+
+service iptables save
+service iptables restart
+
+6. SVN 시작하기
+# svnserve -d -r /home/svn1/
+
+(서버시작할 때 이 명령어로 해줄 것)
+service svnserve start로 해버리면 포트만 잡아먹고 경로인식을 못함.
+
+6-1. SVN 서버 강제 종료
+# killall svnserve
+
+7. 정상작동 확인
+# ps -aux | grep svnserv
+
+# netstat -ant | grep 3690
+
+8. 시스템 부팅시 자동으로 시작
+# chkconfig svnserve on
+# chkconfig --list svnserve
+
+10. 비밀번호 암호화 관련 (store-plaintext-passwords 문제)
+cd /root/.svnversion
+vim servers
+[global]
+약 155줄- store-passwords = yes
+약 156줄- store-plaintext-passwords = yes
+
+11. SVN 기본 디렉터리 만들기
+root@localhost ~]# vi .bash_profile
+
+SVN_EDITOR=/usr/bin/vim
+export SVN_EDITOR
+
+source .bash_profile
+
+11-1. trunk 폴더
+[root@localhost ~]# svn mkdir svn://192.168.0.10/repos/trunk
+
+--이 줄 이하는 자동으로 제거됩니다--
+
+A    svn://192.168.0.10/repos/trunk
+~
+:q로 빠져나오기
+
+로그 메시지가 변경되지 않았거나 지정되지 않았습니다
+취소(A), 계속(C), 수정(E):
+= c 엔터
+
+(참고할 것) 비밀번호(암호화되지 않은)를 저장할지 물어보면
+Store Password unencrpyted (yes/no)?
+'yes', yes 입력해도 안 되면, 한글로 예라고 입력한다.
+이유는 linux 언어가 한글로 설정되어 있기 때문이다.
+# echo $LANG
+
+11-2. SVN session 계정 정보 초기화
+cd /root/.subversion/auth
+rm -rf /root/.subversion/auth/svn.simple
+
+11-3. branches, tags 
+[root@localhost ~]# svn mkdir svn://192.168.0.10/repos/branches
+[root@localhost ~]# svn mkdir svn://192.168.0.10/repos/tags
+
+12. 저장소 리스트 보기
+# svn list svn://192.168.0.10/repos
+
+13. 저장소 삭제 방법
+[root@orcldev svn1]# ls
+repos
+[root@orcldev svn1]# pwd
+/home/svn1
+[root@orcldev svn1]# rm -rf repos/
+

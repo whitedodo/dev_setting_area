@@ -1,0 +1,49 @@
+/*
+	Project Name: CentOS 7, Apache 2, SSL 설정 방법(자기 서명)
+	Create Date: 2020-12-06
+	Filename: 201206_linux_apache_ssl_vsftpd_guide.txt
+	Author: Dodo, rabbit.white at daum dot net
+	Licenses: GNU/GPL v3 Licenses	
+	Description:
+	
+
+
+*/
+
+1. httpd 설치
+yum -y install httpd
+
+2. SSL 설치
+yum -y install mod_ssl
+mkdir /etc/ssl/private
+chmod 700 /etc/ssl/private
+openssl req -x509 -nodes -days 1825 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+cat /etc/ssl/certs/dhparam.pem |tee -a /etc/ssl/certs/apache-selfsigned.crt
+
+3. SSL 설정
+vim /etc/httpd/conf.d/ssl.conf
+
+약 60줄 
+ServerName 192.168.0.2:443
+
+약 75, 80줄 주석
+#SSLProtocol all -SSLv2 -SSLv3
+#SSLCipherSuite HIGH:3DES:!aNULL:!MD5:!SEED:!IDEA
+
+약101줄
+SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+
+약109줄
+SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+
+4. Http 설정
+vim /etc/httpd/conf/httpd.conf
+약96줄
+ServerName 192.168.0.2:80
+
+5. 환경설정 이상유무 확인하기
+apachectl configtest
+
+6. 서비스 재시작
+systemctl restart httpd

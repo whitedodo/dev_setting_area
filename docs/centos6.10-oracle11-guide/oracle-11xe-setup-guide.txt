@@ -1,0 +1,47 @@
+###### Oracle 11xe setup Guide
+##### 2020-10-29 
+##### Dodo / rabbit.white at daum dot net (GNU/GPL v3 Licenses)
+
+1. library 설치하기
+yum install libaio bc flex  
+
+2. 오라클 홈페이지 rpm 버전 (11xe)
+cd /app/oracle/Disk1
+rpm -ivh oracle-xe-11.2.0-1.0.x86_64.rpm
+/etc/init.d/oracle-xe configure
+
+3. 오라클 서비스 시작
+/etc/init.d/oracle-xe start
+
+4. 프로필 수정
+vim /etc/profile
+
+export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
+export ORACLE_SID=XE
+export PATH=$ORACLE_HOME/bin:$PATH
+
+5. 프로필 반영
+source /etc/profile
+
+6. 재부팅
+reboot
+
+7. sqlplus 실행 방법
+sqlplus system/1234
+
+8. 계정 생성
+
+8-1 (Oracle 11g는 c## 입력 안해도 생성됨.) -> Oracle 19g부터는 c##입력 필수
+- create user hr identified by 123456;
+
+8-2 권한 생성
+- grant connect, dba, resource to hr;
+
+8-3 계정 삭제와 계정 패스워드 변경
+- 'alter user 유저명 identified by 패스워드'  명령어로 계정의 패스워드를 변경한다.
+- 'drop user 유저명 cascade' 명령어로 계정을 삭제한다.
+
+9. sqlplus 관리자 접속 방법 (특수문자 계정인 경우)
+sqlplus
+
+conn system/"1234"

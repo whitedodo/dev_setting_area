@@ -1,0 +1,10 @@
+[리눅스 가이드 - CentOS 6.10 동작안할 때 점검사항]
+- 2020-10-16
+- 도도(Dodo) / rabbit.white at daum dot net
+  [GNU/GPL v3 Licenses]
+
+1. yum clean all
+2. vim /etc/resolv.conf
+nameserver 168.126.63.1
+nameserver 168.126.63.2
+3. yum update

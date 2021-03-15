@@ -1,0 +1,16 @@
+/*
+	Project Name: CentOS 7 - linux grub2 settings
+	Create Date: 2020-12-06
+	Author: Dodo / rabbit.white at daum dot net
+	Filename: centos-7-10-linux-grub2-settings.txt
+	Licenses: GNU/GPL v3 Licenses
+	Description:
+
+*/
+
+[현재 Grub2 순서 조회]
+1. grep ^menuentry /boot/grub2/grub.cfg | cut -d "'" -f2
+
+2. grub2-set-default "CentOS Linux (5.9.12-1.el7.elrepo.x86_64) 7 (Core)"
+
+3. grub2-editenv list

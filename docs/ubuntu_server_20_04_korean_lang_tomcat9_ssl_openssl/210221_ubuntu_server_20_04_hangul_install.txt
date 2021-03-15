@@ -1,0 +1,38 @@
+﻿/*
+	Project Name: Ubuntu Server 20.04 - Korean Language Pack(한글 지원)
+	Filename: 210221_ubuntu_server_20_04_hangul_install.txt
+	Author: Dodo(rabbit.white at daum dot net)
+	Create Date: 2021-02-21
+	Licenses: GNU/GPL v3 Licenses.
+	Description:
+	* 선행과정: 1단계 네트워크 설정, 2단계 한글 설정
+	Goal(목표):
+	* 2단계: 한글 언어 설정을 설정할 수 있다.
+	
+
+*/
+1. 우분투 20.04 서버 설치하기
+# su
+# apt install language-pack-ko
+
+2. 한글 수정하기
+# locale-gen ko_KR.UTF-8
+
+3. locale(로케일) 변경하기
+# vim /etc/default/locale
+
+LANG="en_US.UTF-8"
+LANG="ko_KR.UTF-8"
+
+4. 문자열 환경설정 변경하기
+# vim /etc/environment
+root@master:/etc/tomcat9# vim /etc/environment
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+
+LANG="ko_KR.UTF8"
+LANGUAGE="ko_KR:ko:en_GB:en"
+
+:wq 
+
+5. 한글 문자열 추가하기
+# apt install fonts-nanum fonts-nanum-coding fonts-nanum-extra

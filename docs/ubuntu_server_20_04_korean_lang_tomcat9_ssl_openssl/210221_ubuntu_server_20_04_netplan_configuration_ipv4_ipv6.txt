@@ -1,0 +1,66 @@
+﻿/*
+	Project Name: Ubuntu Server 20.04 - NetPlan Configuration IPv4, IPv6 설정 방법
+	Filename: 210221_ubuntu_server_20_04_netplan_configuration_ipv4_ipv6.txt
+	Author: Dodo(rabbit.white at daum dot net)
+	Create Date: 2021-02-21
+	Licenses: GNU/GPL v3 Licenses.
+	Description:
+	* 선행과정: 1단계 네트워크 설정 
+                           (고정IP를 할당할 수 있다)
+
+            * 네트워크: IPv6에 대한 설정하는 방법도 입문으로 소개하였다.
+	
+
+*/
+* 1. 우분투 20.04 / 서버 (netplan을 사용함)
+# cd /etc/netplan/
+# vim 00-installer-config.yaml
+
+* 2. IPv4, IPv6 환경설정(로컬 네트워크) [예시]
+---------------------------------------------------------------
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+     enp0s3:
+      addresses:
+      - 192.168.1.25/24
+      - "2001:1::1/64"
+      gateway4: 192.168.1.1
+      gateway6: "2001:1::2"
+      nameservers:
+        addresses:
+        - 1.214.68.2
+        - 61.41.153.2
+---------------------------------------------------------------
+참고사항: Public DNS(공개 DNS)
+1. [KT-DNS]
+168.126.63.1, 168.126.63.2
+
+2. [데이콤, LG 유플러스]
+1.214.68.2
+61.41.153.2
+
+3. [SK브로드밴드]
+219.250.36.130
+210.220.163.82
+
+4. [구글]
+8.8.8.8
+4.4.4.4
+
+* 3. 수정 예제
+---------------------------------------------------------------
+network:
+  ethernets:
+    enp0s3:
+            addresses: [192.168.0.20/24]
+            gateway4: 192.168.0.1
+            nameservers:
+                    addresses: [1.214.68.2,61.41.153.2]
+  version: 2
+---------------------------------------------------------------
+:wq
+
+* 4. 적용
+# netplan apply

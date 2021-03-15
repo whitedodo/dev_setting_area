@@ -1,0 +1,13 @@
+##### CentOS 6.10 - VirtualBox Guest 셋팅방법
+##### 2020-10-31 / Dodo (rabbit.white at daum dot net)
+##### GNU/GPL v3 Licenses
+
+# yum update kernel*
+# yum install gcc kernel-devel kernel-headers make bzip2 perl
+
+# yum update
+# yum upgrade
+
+# /media/VBoxLinuxAdditions.run
+# mkdir /media/abap
+# mount -t vboxsf abap /media/abap

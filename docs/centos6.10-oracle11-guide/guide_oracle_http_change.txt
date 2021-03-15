@@ -1,0 +1,9 @@
+[오라클 - 8080포트 변경하기] - 2020-10-26
+Dodo / rabbit.white at daum dot net
+(GNU/GPL v3 Licenses)
+
+C:\Windows\system32>sqlplus /nolog
+SQL> conn /as sysdba
+SQL> call dbms_xdb.cfg_update(updateXML(dbms_xdb.cfg_get(), '/xdbconfig/sysconfig/protocolconfig/httpconfig/http-port/text()', 8083));
+SQL> commit;
+SQL> EXEC dbms_xdb.cfg_refresh;

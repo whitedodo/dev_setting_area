@@ -1,0 +1,51 @@
+/*
+	Project Name: CentOS 6, 7 - vsftp 설치가이드
+	Create Date: 2020-12-06
+	Author: Dodo / rabbit.white at daum dot net
+	Filename: vsftpd.txt
+	Licenses: GNU/GPL v3 Licenses
+	Description:
+
+*/
+
+[Vsftp]
+1. yum install vsftpd
+[사용자 계정 만들기]
+2. 
+- useradd user1
+- passwd user1
+
+3. 권한 계정 부여하기(익명 접속x)
+vim /etc/vsftpd/vsftpd.conf
+anonymous_enable=YES /* 익명 접속 불허가 */
+
+......
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd/chroot_list
+allow_writeable_chroot=YES
+
+pasv_enable=YES
+pasv_min_port=5001
+pasv_max_port=5001
+
+use_localtime=YES
+
+4. vim/etc/vsftpd/chroot_list
+user1
+
+5. 방화벽 설정
+vim /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 20 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 21 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 5000 -j ACCEPT
+
+6. 방화벽 서비스 재시작
+service iptables restart
+
+7. vsftpd 접속 재시작
+service vsftpd restart
+
+8. CentOS 7 (SELinux 정책 변경)
+- 해결 방법 : vi /etc/selinux/config
+SELINUX=disabled
+위와 같이 Enable 된 값을 Disable로 변경

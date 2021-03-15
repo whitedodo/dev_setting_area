@@ -1,0 +1,322 @@
+/*
+      CentOS Stream - Apache 2.4, PHP 7.1.33, Cubrid 11.2 (Compile Version Setting) Guide
+      1. Created Date: 2020-11-21
+      2. Author: Dodo (rabbit.white at daum dot net)
+      3. License: GNU/GPL v3 Licenses
+*/
+
+[1. 필수 툴 설치]
+# yum install gcc gcc-c++ expat-devel.x86_64 pcre-devel
+
+[2. make, gcc, openssl, apr, apr-devel 등 설치]
+# yum install -y make
+# yum -y install gcc* openssl*
+# yum -y install openssl-devel
+-------------------------------------------------------------------
+[3. pcre 다운로드 및 컴파일]
+# mkdir /usr/local/download
+# cd /usr/local/download
+
+# wget https://sourceforge.net/projects/pcre/files/pcre/8.44/pcre-8.44.tar.gz
+# tar zxvf pcre-8.44.tar.gz
+# cd pcre-8.44
+
+# ./configure --prefix=/usr/local
+# make
+# make install
+
+[4. apr-util, apr, httpd 다운로드 및 컴파일]
+# cd /usr/local/download
+# wget http://mirror.apache-kr.org/httpd/httpd-2.4.46.tar.gz
+# wget http://mirror.apache-kr.org/apr/apr-1.7.0.tar.gz
+# wget http://mirror.apache-kr.org/apr/apr-util-1.6.1.tar.gz
+
+# tar zxvf apr-1.7.0.tar.gz
+# tar zxvf apr-util-1.6.1.tar.gz
+# tar zxvf httpd-2.4.46.tar.gz
+
+# mv apr-1.7.0 ./httpd-2.4.46/srclib/apr
+# mv apr-util-1.6.1 ./httpd-2.4.46/srclib/apr-util
+
+# cd /usr/local/download/httpd-2.4.46
+# vim server/mpm/worker/worker.c
+
+    87줄 #define DEFAULT_SERVER_LIMIT 1024
+    103줄 #define DEFAULT_THREAD_LIMIT 64
+
+:wq
+
+[# 프로세스 설정 * 소개]
+
+worker 방식의 Apache를 설치하였으며 정적 컴파일 설치를 하였다
+worker.c의 85번, 103번 라인을 서버 상황에 맞게 여유있게 설정한다
+
+*** DEFAULT_SERVER_LIMIT 는 프로세스의 개수 제한
+*** DEFAULT_THREAD_LIMIT 는 프로세스당 쓰레드의 갯수 제한
+
+위의 설정은 1024 * 64 = 65536 개의 쓰레드를 생성할수 있으며 work 방식의 장점은 pork 방식에 비하여 메모리를 확실히 절약할 수 있다
+
+work방식의 튜닝은 프로세스당 적당량의 쓰레드의 설정이 관건이다
+
+너무 많은 쓰레드를 할당하면 프로세스당 메모리 사용량이 비대해져서 메모리의 절약은 있는 반면 성능저하의 원인이 될수 있다
+
+현재의 설정은 최대의 개수제한을 설정 및 컴파일한 것으로 세부적인 설정은 config 파일에서 조정할 수 있다
+[Operation System / 운영체제 이론이 적용됨]
+
+# ./configure --prefix=/usr/local/apache2 --enable-so --enable-rewrite --enable-ssl --enable-modules=shared --enable-mods-shared=all --enable-apr --with-mpm=worker --enable-apr-util
+# make && make install
+
+-> --with-mpm=prefork 방식
+(메모리 낭비가 심각함)
+-> 대안: --with-mpm=worker
+(운영체제: 프로세스당 쓰레드로 처리가능함)
+
+[5. httpd.conf의 ServerName 수정]
+# vi /usr/local/apache2/conf/httpd.conf
+
+## modules 디렉토리 확인 결과 mod_ssl.so 파일이 존재한다. 
+## 단, httpd.conf에는 Include되어 있지 않음.
+
+144줄 활성화 하기
+#LoadModule ssl_module modules/mod_ssl.so
+LoadModule ssl_module modules/mod_ssl.so
+
+201줄 이메일 주소
+ServerAdmin root@localhost
+
+211번째 라인
+ServerName localhost:80
+또는
+ServerName 192.168.0.10:80
+
+또한 httpd.conf 파일에 아래와 같은 내용이 추가되었다.
+
+<IfModule ssl_module>
+SSLRandomSeed startup builtin
+SSLRandomSeed connect builtin
+</IfModule>
+
+
+[6. 방화벽]
+# 방화벽 실행 확인
+# firewall-cmd --state
+running
+
+# 현재 사용중인 Zone 확인
+# firewall-cmd --get-default-zone
+public
+
+# 80포트 허용
+# firewall-cmd --permanent --zone=public --add-port=80/tcp
+success
+
+# 방화벽 재시작
+# firewall-cmd --reload
+success
+
+# 방화벽 적용 확인
+# firewall-cmd --zone=public --list-all
+
+[7. 서비스 등록]
+# cd /usr/lib/systemd/system
+# vim apache.service
+
+-------------------------------------------------------------------
+[Unit]
+Description=Apache Web Server 2.4
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+User=root
+Group=root
+
+ExecStart=/usr/local/apache2/bin/apachectl start 
+ExecStop=/usr/loacal/apache2/bin/apachectl graceful-stop 
+ExecReload=/usr/local/apache2/bin/apachectl graceful 
+
+[Install]
+WantedBy=multi-user.target
+-------------------------------------------------------------------
+:wq
+
+[8. 실행 확인 - 수동 실행 / 서비스 실행 방법]
+# cd /usr/local/apache2/bin
+
+임시 확인
+# ./apachectl start
+# ./apachectl stop
+
+서비스 방법으로 실행하기
+# service apache stop
+# service apache start
+
+#ps -ef|grep httpd
+
+-----------------------------------------------------------------
+//              PHP 7.1.33 내려받기
+//              https://www.php.net/releases/
+//	    공식 메뉴얼: build-guide.html 참고하기
+-----------------------------------------------------------------
+
+[9. PHP 7.1.33 내려받기]
+# cd /usr/local/download
+# wget https://www.php.net/distributions/php-7.1.33.tar.gz
+# tar xvfz php-7.1.33.tar.gz
+# cd {php-version}/ext
+# mkdir cubrid
+
+[10. Cubrid PHP 7 / Linux (SRC) 다운받기]
+https://www.cubrid.org/downloads
+
+# cd /usr/local/download
+# wget https://ftp.cubrid.org/CUBRID_Drivers/PHP_Driver/11.0.0/Linux/CUBRID-PHP-11.0-latest.tar.gz
+
+# tar xvfz Linux/CUBRID-PHP-11.0-latest.tar.gz
+# cd cubrid-php
+# cp php_cubrid.c php_cubrid.h php_cubrid7.c php_cubrid7.h php_cubrid_version.h config.m4 ../{php-version}/ext/cubrid
+
+
+[11. autoconf 설치]
+# yum install -y autoconf
+
+[12. libxml2, libxml2-devel]
+# yum install libxml2
+# yum install libxml2-devel
+
+# cd /usr/local/download/{php-version}
+# ./buildconf --force
+
+[13. yum 라이브러리 gmp, gmp-devel, pam-devel, libicu-devel, net-snmp,
+bzip2-devel curl-devel libpng-devel libjpeg-devel gdbm-devel freetype-devel
+
+# yum -y install gmp gmp-devel pam-devel libicu-devel net-snmp-devel bzip2-devel curl-devel libpng-devel libjpeg-devel gdbm-devel freetype-devel
+
+[14. mhash-0.9.9.9.tar.gz 설치]
+# cd /usr/local/download
+# wget https://sourceforge.net/projects/mhash/files/mhash/0.9.9.9/mhash-0.9.9.9.tar.gz
+# tar xvfz mhash-0.9.9.9.tar.gz 
+# cd mhash-0.9.9.9/
+# ./configure
+# make && make install
+
+[15. mcrypt-2.5.8.tar.gz 설치]
+# cd /usr/local/download
+# wget http://sourceforge.net/projects/mcrypt/files/Libmcrypt/2.5.8/libmcrypt-2.5.8.tar.gz
+# tar xvfz libmcrypt-2.5.8.tar.gz
+# cd libmcrypt-2.5.8/
+# ./configure
+# make && make install
+
+[16. remi-release-8.0-4.el8.remi.noarch.rpm]
+# dnf install -y https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+
+[17. libc-client uw-imap-devel uw-imap uw-imap-static 설치]
+# yum -y install libc-client uw-imap-devel uw-imap uw-imap-static
+
+[18. libxml2 설치]
+# cd /usr/local/download
+# wget http://xmlsoft.org/sources/old/libxml2-2.6.30.tar.gz
+# tar xvfz libxml2-2.6.30.tar.gz
+# cd libxml2-2.6.30
+# ./configure --prefix=/usr/local
+# make
+# make install
+# ldconfig
+
+[19. expat xml parser 설치]
+# cd /usr/local/download
+# wget http://sourceforge.net/projects/expat/files/expat/2.0.1/expat-2.0.1.tar.gz
+# tar xvfz expat-2.0.1.tar.gz
+# cd expat-2.0.1
+# ./configure --prefix=/usr/local
+# make && make install
+# ldconfig
+
+[20. fontconfig 설치]
+# cd /usr/local/download
+# wget http://fontconfig.org/release/fontconfig-2.8.0.tar.gz
+# tar xvfz fontconfig-2.8.0.tar.gz
+# cd fontconfig-2.8.0
+# ./configure --prefix=/usr/local --with-expat=/usr/local
+# make && make install
+# ldconfig
+
+[21. gd 설치]
+# cd /usr/local/download
+# wget https://sourceforge.net/projects/gd2/files/gd-2.0.35.tar.gz
+# tar xvfz gd-2.0.35.tar.gz
+# cd gd-2.0.35
+# ./configure --prefix=/usr/local/gd --with-freetype=/usr/local --with-png=/usr/local --with-jpeg=/usr/local --with-fontconfig=/usr/local
+# make && make install
+# ldconfig
+
+[22. openssl 라이브러리 링크 만들기]
+https://www.openssl.org/source/
+# cd /usr/local/download
+# wget https://www.openssl.org/source/openssl-1.1.1i.tar.gz
+# cd openssl-1.1.1i
+# ./config shared
+# make
+# cp libcrypto.a libcrypto.so.1.1 libssl.so.1.1 /usr/lib
+# cd /usr/lib
+# ln -s libcrypto.so.1.1 libcrypto.so
+# ln -s libssl.so.1.1 libssl.so
+
+[23. openssl 컴파일 하기]
+# cd /usr/local/download/openssl-1.1.1i
+# ./config --prefix=/usr/local --openssldir=/usr/local/openssl
+# make
+# make install
+# reboot
+
+
+[24. php 7.1, configure 설정하기]
+# cd /usr/local/download/php-7.1.33
+# ./configure --prefix=/usr/local/php -with-cubrid=shared --with-apxs2=/usr/local/apache2/bin/apxs --with-libdir=lib64 --with-config-file-path=/usr/local/apache/conf --with-libxml-dir=/usr/local --with-ssl-dir=/usr/local/openssl --with-zlib --with-zlib-dir --with-bz2 --enable-calendar --with-curl --enable-dba --with-gdbm --enable-exif --enable-ftp --with-gd=/usr/local/gd --with-jpeg-dir=/usr/lib64 --with-png-dir=/usr/local --with-freetype-dir=/usr/local --enable-gd-native-ttf --with-gettext --with-imap=/usr/local/imap-2007f --with-imap-ssl --with-kerberos --enable-mbstring --with-mhash --with-mcrypt --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-wddx --enable-opcache --enable-zip --with-pdo-mysql --with-snmp --enable-intl --disable-debug --enable-calendar --with-iconv
+
+[25. php 7.1 with cubrid - make, make install로 설치하기]
+# make
+# make install
+
+------> 공식 메뉴얼 내용(한글 번역)
+[26. php.ini-xxx 복사 (PHP에서는 php.ini-development 및 php.ini-production; 필요한 것을 선택) 
+      파일을 / usr / local / php / lib 디렉토리에 넣고 이름을 php.ini로 바꿉니다.]
+
+php-root> cp php.ini-production /usr/local/php/lib/php.ini
+
+[27. php.ini 파일에서 extension_dir 변수를 설정하고 CUBRID PHP Library를 확장 변수에 추가합니다.]
+[예를 들면]
+
+# vim /usr/local/php/lib/php.ini
+
+extension_dir = "/usr/local/php/lib/php/extension/no-debug-zts-xxx"
+extension = cubrid.so
+
+:wq
+
+[28. 아파치 웹서버 2.4 환경설정 / httpd.conf = PHP 지원하기]
+# vim /usr/local/apache2/conf/httpd.conf
+
+.......
+(약) 269줄
+<IfModule dir_module>
+    DirectoryIndex index.html index.php index.php index.htm
+</IfModule>
+
+(약) 407줄
+    AddType application/x-httpd-php .php .html .htm .inc
+    AddType application/x-httpd-php-source .phps
+
+
+:wq
+
+[29. 실행 확인 - 서비스 실행 방법]
+
+서비스 방법으로 실행하기
+# service apache stop
+# service apache start
+
+#ps -ef|grep httpd
+

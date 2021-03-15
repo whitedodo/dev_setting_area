@@ -1,0 +1,20 @@
+### 여러 개 다중 압축파일 하나로 합치기 / 다중 분할
+### 2020-10-30 Dodo (rabbit.white at daum dot net)
+### GNU/GPL v3 licenses
+
+1. 다중 압축 파일 하나로 합치기
+# ls
+CentOS6-10-study-xe-backup.z01  CentOS6-10-study-xe-backup.z04
+CentOS6-10-study-xe-backup.z02  CentOS6-10-study-xe-backup.zip
+CentOS6-10-study-xe-backup.z03
+# zip -s 0 CentOS6-10-study-xe-backup.zip --out single.zip
+ copying: CentOS6-10-study-xe-backup.ova
+
+2. 압축 풀기
+unzip single.zip
+
+3. 다중 분할
+zip -s 100k -o ziptest.zip mytest.txt
+
+k (kilobytes), m (megabytes), g (gigabytes) 지정할 수 있습니다.
+예) 100k, 200m, 300g

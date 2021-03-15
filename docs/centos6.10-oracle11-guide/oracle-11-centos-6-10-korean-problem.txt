@@ -1,0 +1,58 @@
+[Oracle 한글 깨짐]
+
+1. profile 수정
+vim .bash_profile
+export NLS_LANG=AMERICAN_AMERICA.KO16KSC5601
+또는 export NLS_LANG=KOREAN_KOREA.AL32UTF8
+
+source .bash_profile
+
+2. sqlplus
+sqlplus "/as sysdba"
+
+select * from nls_database_parameters;
+
+SQL> desc nls_database_parameters;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PARAMETER                                 NOT NULL VARCHAR2(30)
+ VALUE                                              VARCHAR2(40)
+
+select * from nls_database_parameters where parameter = 'NLS_CHARACTERSET';
+          결과값 = 
+
+(참고로 가상 컬럼이어서 update문 수행불가능함)
+
+=== [UTF 8 확장 방법]
+update sys.props$ set value$='UTF8' where name='NLS_CHARACTERSET';
+update sys.props$ set value$='UTF8' where name='NLS_NCHAR_CHARACTERSET';
+update sys.props$ set value$='KOREAN_KOREA.UTF8' where name='NLS_LANGUAGE';
+
+=== [한글 확장 / KO16MSWIN949]
+update sys.props$ set value$='KO16MSWIN949' where name='NLS_CHARACTERSET';
+update sys.props$ set value$='KO16MSWIN949' where name='NLS_NCHAR_CHARACTERSET';
+update sys.props$ set value$='KOREAN_KOREA.KO16MSWIN949' where name='NLS_LANGUAGE';
+
+commit;
+
+3. 서버 재시작
+shutdown immediate
+startup mount;
+
+4. 언어 관련 데이터베이스 설정하기
+sql> alter system enable restricted session;
+sql> alter system set job_queue_processes=0;
+sql> alter system set aq_tm_processes=0;
+sql> alter database open;
+sql> alter database character set UTF8;
+(alter database character set KO16MSWIN949;)
+sql> shutdown immediate
+sql> startup mount;
+
+alter system enable restricted session;
+alter system set job_queue_processes=0;
+alter system set aq_tm_processes=0;
+alter database open;
+alter database character set UTF8;
+shutdown immediate
+startup mount;

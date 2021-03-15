@@ -1,0 +1,48 @@
+##### CentOS 6.10 - 네트워크 설정 메뉴얼
+##### 1. eth1 -> eth0으로 변경하기
+##### 2. etc/resolv.conf 
+##### 2020-10-31 (Dodo / rabbit.white at daum dot net)
+##### GNU/GPL v3 Licenses
+
+### 1. ifconfig로 MAC주소 확인 및 eth1 확인하기
+# ifconfig
+eth1      Link encap:Ethernet  HWaddr 08:00:27:01:CD:50
+          inet addr:192.168.0.30  Bcast:192.168.0.255  Ma
+(중략)
+
+08:00:27:01:CD:50 메모할 것
+
+### 2. 기존 네트워크 배정 정보 제거
+# rm -rf /etc/udev/rules.d/70-persistent-net.rules
+
+### 3. ifcfg-eth0의 MAC 정보 최신화
+# cd /etc/sysconfig/network-scripts
+# vim ifcfg-eth0
+
+DEVICE=eth0
+TYPE=Ethernet
+UUID=189f7b80-d72e-466c-9676-6c660a7788a4
+ONBOOT=yes:
+NM_CONTROLLED=yes
+BOOTPROTO=none
+HWADDR=08:00:27:01:CD:50
+IPADDR=192.168.0.10
+PREFIX=24
+GATEWAY=192.168.0.1
+DNS1=1.214.68.2
+DNS2=61.41.153.2
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=yes
+IPV6INIT=no
+NAME="System eth0"
+~
+
+### 4. 재부팅하기
+# reboot
+
+### 5. /etc/resolv.conf 설정하기
+
+# vim /etc/resolv.conf
+
+nameserver 168.126.63.1
+nameserver 168.126.63.2

@@ -1,0 +1,45 @@
+; // ;주석 표기
+; // Created Date: 2020-11-21
+; // minon-project.xyz - 정방향 
+; //
+$TTL 1D
+@	IN SOA	ns1.minon-project.xyz.	admin.minon-project.xyz. (
+					0	; serial
+					1D	; refresh
+					1H	; retry
+					1W	; expire
+					3H )	; minimum
+	IN NS	ns1.minon-project.xyz.
+	IN NS	ns2.minon-project.xyz.
+
+	A	127.0.0.1
+	AAAA	::1
+
+
+;외부
+	IN A	150.45.20.3
+ns1	IN A	150.45.20.3
+ns2	IN A	150.45.20.3
+
+www	IN A	150.45.20.3
+
+sso	IN A	150.45.20.3
+lab	IN A	150.45.20.3
+
+
+;개발-외부(학습)
+db-study	IN A	150.45.20.3
+
+;운영 DB(oracle XE)
+db-orcl-op	IN A	10.210.150.20
+;개발 DB(oracle XE)
+db-orcl-dev	IN A	10.210.150.30
+;품질 DB(oracle XE)
+db-orcl-q	IN A	10.210.150.40
+
+;개발
+dstudy	IN A	10.210.150.50
+;품질
+q-study	IN A	10.210.150.60
+;운영
+study	IN A	150.45.20.3

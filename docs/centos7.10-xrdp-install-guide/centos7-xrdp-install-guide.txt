@@ -1,0 +1,41 @@
+## CentOS 7 - XRDP Guide Manual
+##### 1. Create Date: 2020-11-20
+##### 2. Licenses: GNU GPL v3 Licenses
+##### 3. Author: Dodo (rabbit.white at daum dot net)
+##### 4. Description
+
+1. Firewalld 방화벽 끄기
+systemctl stop firewalld
+systemctl mask firewalld
+
+2. EPEL repository 등록
+yum install epel-release -y
+
+3. xrdp와 vnc 설치
+yum -y install xrdp tigervnc-server
+
+4. 서비스 등록
+systemctl enable xrdp.service
+
+5. 방화벽 초기화 / 해제
+iptables -F
+iptables -A INPUT -p tcp --dport 3389 -j ACCEPT
+
+6. IPTables 서비스 설치(순정 버전 안 된 경우)
+yum install -y iptables-services
+
+7. IPTables 저장 (방화벽 저장
+service iptables save
+
+8. xrdp 권한 부여
+chcon -t bin_t /usr/sbin/xrdp
+chcon -t bin_t /usr/sbin/xrdp-sesman
+
+9. xrdp 서비스 재시작
+systemctl start xrdp.service
+
+10. 서비스 확인(xrdp)
+ps -ef|grep xrdp
+
+11. 재부팅
+reboot

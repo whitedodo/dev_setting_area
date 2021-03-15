@@ -1,0 +1,146 @@
+/*
+	Project Name: CentOS Stream, Apache 2.4 VirtualHost, Apache 2.4 튜닝 (외부 접속 허용)
+	Create Date: 2021-01-26
+	Filename: 210126_apache2_4_virtual_host_guide.txt
+	Author: Dodo, rabbit.white at daum dot net
+	Licenses: GNU/GPL v3 Licenses	
+	Description:
+	
+*/
+
+* 적용 대상: Apache 2.4
+
+[1] httpd.conf 환경설정하기
+
+1. Apache 2.4 / Conf / httpd.conf
+
+# vim /etc/httpd/conf/httpd.conf
+
+* 89줄
+ServerAdmin rabbit.white@localhost.com
+
+* 99줄
+ServerName 192.168.0.1:80
+
+* 약 107줄~ 115줄
+
+httpd.conf
+## 2021-01-25 (모든 접속 Deny)
+<Directory />
+    Options FollowSymLinks
+    AllowOverride None
+    Order deny,allow
+    Deny from all
+</Directory>
+
+의미: 
+1. Order deny,Allow (거부, 허용 순서로 접근)
+2. Deny from all (모든 접속 Deny [거부] )
+httpd.conf 의 <Directory>설정을 보면 위와 같이 되어 있는 것을 볼 수 있다.
+
+Order는 허용정책에 대한 순서로, Deny를 수행하고 Allow를 수행하게 되어 있는데, 
+아래줄에 모든 접속을 deny한다고 설정이 되어 있기 때문에 모든 접근이 거부된 것이다. 
+(Directory 태그의 파라미터(/)는 전체 폴더를 뜻함)
+
+
+* [맨 하단] (363줄)
+IncludeOptional conf.d/*.conf
+
+[2] 가상호스트 / 환경설정하기
+2. 가상호스트 설정하기 (호스트명 이름으로 식별해놓고 운영해도 무방하다)
+# vim /etc/httpd/conf.d/vhost-localhost-com.conf
+
+[-------------------- 전문 -------------------------]
+
+##### 1. 디렉터리 환경설정
+##### 생성일자(Created date): 2021-01-26
+##### rabbit.white at daum dot net
+##### 
+
+## 2021-01-26 Rabbit2me
+
+<Directory "/var/www/html/localhost.com/rabbit2me">
+       DirectoryIndex index.html index.php
+       Options FollowSymLinks
+       AllowOverride None
+       Allow from all
+</Directory>
+
+## 2021-01-26 PHPMyAdmin
+
+<Directory "/var/www/html/common/phpMyAdmin">
+       DirectoryIndex index.html index.php
+       Options FollowSymLinks
+       AllowOverride None
+       Allow from all
+</Directory>
+
+#### 가상호스트 환경설정
+
+<VirtualHost *:80>
+
+#       ServerAdmin rabbit.white@localhost.com
+        DocumentRoot /var/www/html/localhost.com/rabbit2me
+        ServerName rabbit2me.localhost.com
+        ServerAlias rabbit2me.localhost.com
+
+#       ErrorLog logs/dummy-host.example.com-error_log
+#       CustomLog logs/dummy-host.example.com-access_log common
+
+</VirtualHost>
+
+<VirtualHost *:443>
+
+#       ServerAdmin rabbit.white@localhost.com
+
+        DocumentRoot /var/www/html/localhost.com/rabbit2me
+	
+        ServerName rabbit2me.localhost.com
+        ServerAlias rabbit2me.localhost.com
+
+#       ErrorLog logs/dummy-host.example.com-error_log
+#       CustomLog logs/dummy-host.example.com-access_log common
+
+</VirtualHost>
+
+<VirtualHost *:80>
+
+	DocumentRoot /var/www/html/common/phpMyAdmin
+
+    	ServerName myadmin.localhost.com
+	ServerAlias myadmin.localhost.com
+	
+#       ErrorLog logs/dummy-host.example.com-error_log
+#       CustomLog logs/dummy-host.example.com-access_log common
+
+</VirtualHost>
+
+<VirtualHost *:443>
+
+        DocumentRoot /var/www/html/common/phpMyAdmin
+
+        ServerName myadmin.localhost.com
+        ServerAlias myadmin.localhost.com
+
+#       ErrorLog logs/dummy-host.example.com-error_log
+#       CustomLog logs/dummy-host.example.com-access_log common
+
+</VirtualHost>
+
+[--------------------  End of 전문 -------------------------------]
+
+[3] 사용자 폴더에 권한 주기
+
+# chown -R user1:user1 폴더명
+
+[4] Apache 2.4 서버에서 콘텐츠 폴더로 인식할 수 있는 권한 지정해주기
+(해당 작업을 수행하지 않으면 Access denial, Forbidded을 접하게 될 수 있음)
+
+# 명령어
+# chcon -R -t httpd_sys_content_t 폴더명
+
+[5] MySQLi Connect (PHP 사용하기) 
+[아파치 2.4에서 네트워크 접속을 허용해 주기]
+
+해결책: phpmyadmin - mysqli_real_connect()" .......
+# sudo setsebool -P httpd_can_network_connect 1

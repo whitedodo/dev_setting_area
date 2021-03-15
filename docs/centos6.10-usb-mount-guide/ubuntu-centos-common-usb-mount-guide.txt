@@ -1,0 +1,17 @@
+#### USB 메모리 인식 / 해제 (Ubuntu/CentOS 공통)
+#### 2020-10-30 / Dodo (rabbit.white at daum dot net)
+GNU/GPL v3 Licenses
+
+1. fdisk -l (파티션 위치 조회)
+명령어: fdisk -l
+
+2. USB 메모리 마운트 시키기
+# sudo mkdir /media/usb
+
+# sudo mount -t vfat /dev/sdb1 /media/usb
+
+# sudo mount -t ntfs-3g /dev/sdb1 /media/usb
+
+3. USB 메모리 마운트 해제
+# sudo umount /dev/sdb1
+

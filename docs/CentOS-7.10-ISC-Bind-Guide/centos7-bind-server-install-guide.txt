@@ -1,0 +1,63 @@
+### CentOS 7 - Bind Server
+##### 1. Created Date: 2020-11-21
+##### 2. Author: Dodo (rabbit.white at daum dot net)
+##### 3. License: GNU/GPL v3 Licenses
+
+1. Bind 설치
+yum -y install bind bind-chroot bind-utils
+
+2. 방화벽 포트 개방
+iptables -A INPUT -p udp -m state --state NEW --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW --dport 53 -j ACCEPT
+
+3. 방화벽 저장
+service iptables save
+
+4. named.conf 설정
+vim /etc/named.conf
+
+-> 별도 첨부 named.conf
+
+5. named-rfc1912.zones 설정
+vim /etc/named.rfc1912.zones
+
+-> 별도 첨부 named.rfc1912.zones
+
+6. zone 파일과 reverse 파일 - 생성
+cp /var/named/named.localhost /var/named/minon-project.xyz.zone
+cp /var/named/named.localhost /var/named/minon-project.xyz.rev
+
+7. zone 파일과 reverse 파일 - 소유권 변경
+chown root.named /var/named/minon-project.xyz.zone
+chown root.named /var/named/minon-project.xyz.rev
+
+8. zone 파일과 reverse 파일 - 수정
+vim /var/named/minon-project.xyz.zone
+vim /var/named/minon-project.xyz.rev
+
+-> 별도 첨부
+
+9. 서비스 시작과 등록
+chkconfig named on
+
+service named start
+service named restart
+
+10. 파일 체크
+named-checkconf /etc/named.rfc1912.zones
+-> 메시지가 출력되지 않았다면, 정상
+named-checkconf /etc/named.conf
+-> 메시지가 출력되지 않았다면, 정상
+
+11. 파일 체크 - Zone 검증
+named-checkzone minon-project.xyz /var/named/minon-project.xyz.zone
+
+zone minon-project.xyz/IN: loaded serial 0
+OK
+
+12. 네임서버 응답확인
+dig @8.8.8.8 minon-project.xyz any
+
+13. 팁 - 네트워크 갱신이 안될 경우 
+= 컴퓨터 네트워크 재시작 또는 컴퓨터 재시작 권장
+= 포트 개방 관리 확인 필요함. (TCP/UDP 53포트)

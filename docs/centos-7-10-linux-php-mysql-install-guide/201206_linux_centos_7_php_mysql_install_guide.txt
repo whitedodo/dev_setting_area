@@ -1,0 +1,49 @@
+/*
+	Project Name: CentOS 7 - PHP 5.4, 7 install guide with MySQL
+	생성일자(Create date): 2020-12-06, 2021-01-26
+	파일명(Filename): 201206_linux_centos_7_php_mysql_install_guide
+	라이선스(License): GNU/GPL v3 Licenses
+	설명(Description):
+*/
+
+1. Installing PHP
+rpm -Uvh http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+yum -y install yum-utils
+yum update
+
+2. 설치 - PHP 5.4 
+yum -y install php
+
+3. 설치 - PHP 7.0
+yum-config-manager --enable remi-php70
+yum -y install php php-opcache
+
+4. 설치 - PHP 7.1
+yum-config-manager --enable remi-php71
+yum -y install php php-opcache
+
+5. 설치 - PHP 7.2
+yum-config-manager --enable remi-php72
+yum -y install php php-opcache
+
+6. 설치 - PHP 7.3
+yum-config-manager --enable remi-php73
+yum -y install php php-opcache
+systemctl restart httpd.service
+
+7. PHPMyAdmin 지원하기
+dnf install php-pdo php-pecl-zip php-json php-mbstring php-mysqlnd
+
+8. 생성하기 - phpinfo.php
+vim /var/www/html/phpinfo.php
+
+<?php
+	phpinfo();
+?>
+
+9. service httpd start
+
+10. yum php-mysql supported(PHP MySQL 지원하기)
+yum -y install php-mysqlnd php-pdo
+yum -y install php-gd php-ldap php-odbc php-pear php-xml php-xmlrpc php-mbstring php-soap curl curl-devel
+

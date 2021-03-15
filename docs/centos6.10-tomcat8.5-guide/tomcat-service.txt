@@ -1,0 +1,33 @@
+#!/bin/sh
+# description: Tomcat Start Stop Restart
+# processname: tomcat
+# chkconfig: 234 20 80
+#JAVA_HOME=/usr/local/java/jdk
+#export JAVA_HOME
+#PATH=$JAVA_HOME/bin:$PATH
+#export PATH
+#Source function library.
+. /etc/rc.d/init.d/functions
+source /etc/profile
+export TOMCAT_HOME=/jsp/tomcat-8.5.24/apache-tomcat-8.5.24
+# See how we were called.
+case "$1" in
+start)
+echo -n "Starting tomcat EXPERIMENTAL: "
+daemon $TOMCAT_HOME/bin/startup.sh
+echo
+;;
+stop)
+echo -n "Shutting down tomcat EXPERIMENTAL: "
+daemon $TOMCAT_HOME/bin/shutdown.sh
+echo
+;;
+restart)
+$0 stop
+$0 start
+;;
+*)
+echo "Usage: $0 {start|stop|restart}"
+exit 1
+esac
+exit 0

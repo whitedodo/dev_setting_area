@@ -1,0 +1,87 @@
+/*
+	Project Name: CentOS Stream, MariaDB Server 10.4, Firewall-cmd Guide
+	Create Date: 2021-01-26
+	Filename: 210126_centos_stream_mariadb_firewall_cmd_guide.txt
+	Author: Dodo, rabbit.white at daum dot net
+	Licenses: GNU/GPL v3 Licenses	
+	Description:
+	
+*/
+
+* 적용 대상: 
+
+[1] 설치
+
+1. MariaDB 설치하기
+
+# yum install mariadb-server
+
+[2] 환경설정 (암호만 입력해주고, Y 엔터 계속 누르기)
+# mysql_secure_installation
+
+[3] 서비스 활성화
+# systemctl enable mariadb.service
+# service mariadb stop
+# service mariadb start
+
+[동일한 명령어]
+# sudo systemctl stop mariadb.service
+# sudo systemctl start mariadb.service
+# sudo systemctl restart mariadb.service
+# sudo systemctl status mariadb.service
+
+[4] MariaDB 접속하기
+# mysql -u root -p
+
+MariaDB [(none)]> show databases;
+
+[5] MariaDB 외부 접속 허용시키기
+
+MariaDB [(none)]> use mysql;
+MariaDB [(mysql)]> grant all privileges on*.* to 'root'@'%' identified by 'DB 비밀번호';
+
+[6] MariaDB - 입력한 명령어 저장하기
+MariaDB [(mysql)]> flush privileges;
+
+[7] MariaDB - 탈출하기(Exit)
+MariaDB [(mysql)]> quit;
+
+[8] 방화벽 활성화하기 (CentOS stream / CentOS 8)
+# firewall-cmd --add-port=3306/tcp --permanent
+# firewall-cmd --reload
+
+[9] 방화벽 확인하기 (CentOS stream / CentOS 8)
+# firewall-cmd --zone=public --list-all
+
+[10] 방화벽 포트 및 서비스 삭제 (CentOS stream / CentOS 8)
+# 서비스 삭제 
+--- # 서비스 명에는 http, https, ssh 와 같은 서비스를 넣어주면 된다.
+# firewall-cmd --permanent --zone=public --remove-service=서비스명 
+# firewall-cmd --permanent --zone=public --remove-service=http 
+
+# 포트 삭제 # 
+# firewall-cmd --permanent --zone=public --remove-port=포트번호/프로토콜 
+# firewall-cmd --permanent --zone=public --remove-port=80/tcp
+
+------------------------------------------------------------
+
+[11] MariaDB - 사용자 이름 hello, 내부에서만 접속 가능, 비밀번호 1234
+MariaDB [(none)]> create user 'hello'@'localhost' identified by '1234';
+
+[12] MariaDB - 사용자 이름 hello, 어디에서나 접속 가능, 비밀번호 1234
+MariaDB [(none)]> create user 'hello'@'%' identified by '1234';
+
+[13] MariaDB - 사용자 삭제하기 (계정명: hello)
+MariaDB [(none)]> drop user 'hello'@'%';
+
+[14] MariaDB - hello@localhost에게 test 데이터베이스의 모든 테이블에 대한 모든 권한 부여
+MariaDB [(none)]> grant all privileges on test.* to 'hello'@'localhost';
+
+[15] MariaDB - hello@localhost가 가진 권한 출력
+MariaDB [(none)]> show grants for 'hello'@'localhost';
+
+[16] MariaDB - hello@localhost가 test 데이터베이스에 가진 모든 권한을 제거
+revoke all on test.* from 'hello'@'localhost';
+
+[11-16] MariaDB - 입력한 명령어 저장하기
+MariaDB [(mysql)]> flush privileges;

@@ -1,0 +1,24 @@
+1. CentOS 6.10 - Apache Tomcat 8.5에서 가상 디렉토리 할당하기
+   (Dodo / rabbit.white at daum dot net) 
+   - 2020-10-24 / GNU/GPL v3 Licenses 
+
+1. 경로 찾기
+[root@orcldev ~]# cd /jsp/tomcat-8.5.24/apache-tomcat-8.5.24/conf/
+
+2. 수정(server.xml)
+[root@orcldev ~]# vim server.xml
+
+(중략)
+ <Host name="localhost"  appBase="/home/user1/webapps"
+            unpackWARs="true" autoDeploy="true">
+
+        <Context path="" docBase="." reloadable="true" />
+        <Context path="/hama" docBase="/home/user1/hama/webapps" reloadable="true" />
+        <Context path="/sample" docBase="/home/sample/webapps" reloadable="true" />
+
+(중략)
+
+이렇게 배정해주면 된다.
+
+3. 저장 후 service 재시작
+# service tomcat restart

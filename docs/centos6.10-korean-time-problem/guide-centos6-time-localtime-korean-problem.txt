@@ -1,0 +1,11 @@
+[CentOS 6.* -> 서버시간: 한국시간으로 변경]
+2020-10-17 / Dodo (rabbit.white at daum dot net)
+GNU/GPL v3 Licenses
+
+1. 시간 변경하기(한국시간)
+# rm /etc/localtime
+rm: remove 일반 파일 `/etc/localtime'? y
+[root@orcldev log]# ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+
+2. 시간 조회하기
+# date
