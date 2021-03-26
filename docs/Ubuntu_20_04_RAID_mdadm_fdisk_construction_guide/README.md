@@ -6,3 +6,5 @@
 Apache License v2.0
 
 1. Ubuntu Manpage: GNU fdisk, lfdisk, gfdisk - manipulate partition tables on a hard drive, http://manpages.ubuntu.com/manpages/xenial/man8/fdisk.8.html, Accessed by 2021-03-26, Last Modfied 2021-03-26.
+
+2. Ubuntu Manpage: mdadm - manage MD devices aka Linux Software RAID, http://manpages.ubuntu.com/manpages/xenial/man8/mdadm.8.html, Accessed by 2021-03-26, Last Modfied 2021-03-26. 
