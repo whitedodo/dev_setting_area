@@ -1,0 +1,45 @@
+/*
+*	생성일자(Create date): 2021-04-06 화요일(Tuesday)
+*	작성자명(Author): 도도(Dodo)
+*	파일명(Filename): 210406_ubuntu_20_04_apache_2_4_php_8_command.txt
+*	라이선스(License): Apache License v2.0
+* 	비고(Description):
+*
+*/
+
+-----------------------------------------------------------------------------
+[1. 설치]
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:ondrej/php
+sudo add-apt-repository ppa:ondrej/apache2
+
+sudo apt update
+sudo apt install php8.0 libapache2-mod-php8.0
+
+[2. OpenSSL 명령어]
+openssl genrsa –des3 –out server.key 4096
+openssl req -new -days 10950 -key server.key -out server.csr
+openssl x509 -req -days 10950 -in server.csr -signkey server.key -out server.crt
+
+[3. OpenSSL 자가서명]
+openssl req -x509 -nodes -days 1825 -newkey rsa:4096 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+
+[4. 방화벽 사용방법]
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw deny 443/udp
+ufw status verbose
+ufw enable
+ufw disable
+
+[5. PHP 8.0 확장 구성 설치방법]
+sudo apt-get install -y build-essential
+sudo apt-get -y install gcc make autoconf libc-dev pkg-config
+sudo apt-get -y install php8.0-{bz2,curl,gd,mbstring}
+sudo apt-get -y install php8.0-{mysql,pgsql,xml,zip,fpm,bz2,cli}
+sudo apt-get -y install php8.0-{opcache,readline,imagick,soap,dev,intl}
+sudo apt-get -y install php8.0-{smbclient,redis,ldap,bcmath,gmp,snmp}
+sudo apt-get -y install php8.0-{memcache,memcached,amqp}
+sudo apt-get -y install php8.0-{common,dba}
+sudo apt-get -y install libmagickcore-6.q16-6-extra
+sudo apt-get -y install libgeoip-dev geoip-bin geoip-database
