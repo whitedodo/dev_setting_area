@@ -9,4 +9,3 @@
 ##### 4. 비고(Description):
 ##### 5. 참고자료(Reference):
 ##### -> 1. Redshift, https://jonls.dk/redshift/ , Accessed by 2021-04-15, Last Modified 2021-04-15.
-#####    -> REDShift 제작자는 참고로 바이오 정보를 공부하는 분으로 보인다. (오픈소스 개발자)
