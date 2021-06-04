@@ -5,3 +5,7 @@
 ##### 2. 작성일자(Create date): 2021-06-05 (Friday) 금요일
 ##### 3. 라이센스(License): Apache License v2.0
 ##### 4. 비고(Description):
+##### 5. 참고자료(References)
+##### 1. Project Jupyter | Home, https://jupyter.org, Accessed by 2021-06-04. Last Modified 2021-06-04.
+##### 2. Jupyter and the future of IPython, https://ipython.org, Accessed by 2021-06-04. Last Modified 2021-06-04.
+##### 3. Welcome to Python.org, https://www.python.org, Accessed by 2021-06-04. Last Modified 2021-06-04.
